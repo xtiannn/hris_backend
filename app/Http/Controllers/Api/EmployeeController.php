@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
@@ -11,15 +12,23 @@ class EmployeeController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    public function usersDoesntHaveEmployee()
+    {
+        $users = User::isActive()->whereDoesntHave('employee', function ($query) {
+            $query->where('isActive', 1);
+        })->get();
+        return response()->json($users, 200);
+    }
     public function index()
     {
-        $employees = Employee::isActive()->with(['user', 'salary', 'department'])->get();
+        $employees = Employee::isActive()->with(['user', 'salary', 'department', 'designation'])->get();
         // $employees = Employee::isActive()->get();
 
-        if($employees->count() > 0){
-            return response()->json($employees);
-        }else{
-            return response()->json(['message' => 'No employees found'], 404);
+        if ($employees->count() > 0) {
+            return response()->json($employees, 201);
+        } else {
+            return response()->json($employees, status: 201);
         }
     }
 
@@ -46,9 +55,25 @@ class EmployeeController extends Controller
             'designation_id' => 'required|numeric',
         ]);
 
-        Employee::create($request->all());
+        // Find the existing employee with the same company_id_number
+        $existingEmployee = Employee::where('company_id_number', $request->company_id_number)->first();
 
-        return response()->json(['message' => 'New employee has been added successfully']);
+        if ($existingEmployee) {
+            // Update the existing employee's company_id_number to "old-{timestamp}-{company_id_number}"
+            $timestamp = now()->format('Y-m-d H:i:s');
+            $existingEmployee->update(['company_id_number' => "old-{$request->company_id_number}-{$timestamp}"]);
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // This is only for the purpose of creating a new employee record with the original company_id_number and not updating the  /////
+        // existing (softly deleted) employee record and update the company_id_number to "old-{timestamp}-{company_id_number}"      /////
+        // To keep the record of the softly deleted employee record                                                                 /////
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        // Create a new employee record with the original company_id_number
+        $employee = Employee::create($request->all());
+
+        return response()->json($employee, 201);
     }
 
     /**

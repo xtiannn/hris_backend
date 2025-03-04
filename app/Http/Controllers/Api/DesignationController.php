@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Designation;
 use App\Http\Requests\StoreDesignationRequest;
 use App\Http\Requests\UpdateDesignationRequest;
@@ -13,7 +14,9 @@ class DesignationController extends Controller
      */
     public function index()
     {
-        //
+        $designation = Designation::all();
+
+        return response()->json($designation, 200);
     }
 
     /**

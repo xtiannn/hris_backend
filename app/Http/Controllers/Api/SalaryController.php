@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Salary;
 use App\Http\Requests\StoreSalaryRequest;
 use App\Http\Requests\UpdateSalaryRequest;
 use App\Models\Employee;
 use Exception;
 use Illuminate\Http\Request;
+
 
 class SalaryController extends Controller
 {
@@ -52,16 +54,16 @@ class SalaryController extends Controller
 
             $salary = Salary::create($request->all());
 
-             // Update the Employee record with the new salary_id
-             $employee = Employee::find($request->employee_id);
-             if ($employee) {
-                 $employee->salary_id = $salary->id; // Use the newly created salary ID
-                 $employee->save();
-             }
+            // Update the Employee record with the new salary_id
+            $employee = Employee::find($request->employee_id);
+            if ($employee) {
+                $employee->salary_id = $salary->id; // Use the newly created salary ID
+                $employee->save();
+            }
 
             return response()->json(['message' => 'Salary created successfully'], 201);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error creating salary: ' .$e->getMessage()], 500);
+            return response()->json(['message' => 'Error creating salary: ' . $e->getMessage()], 500);
         }
     }
 
