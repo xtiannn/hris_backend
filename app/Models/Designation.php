@@ -8,12 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Designation extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'designation',
+        'designation',  // Ensure this matches your DB column name!
         'department_id',
     ];
 
-    public function employee()
+    // Relationship: A designation belongs to a department
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    // Relationship: A designation can have many employees
+    public function employees()
     {
         return $this->hasMany(Employee::class);
     }

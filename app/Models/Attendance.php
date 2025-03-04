@@ -5,21 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Salary extends Model
+class Attendance extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'employee_id',
-        'basic_salary',
-        'basic_period',
-        'start_date',
-        'end_date',
-        'status'
+        'status',
+        'date',
+        'time_in',
+        'time_out'
     ];
 
     /**
-     * Define the relationship between Salary and Employee.
+     * Define relationship with Employee model.
+     * Each attendance record belongs to one employee.
      */
     public function employee()
     {

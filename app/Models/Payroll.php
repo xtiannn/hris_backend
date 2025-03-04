@@ -5,21 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Salary extends Model
+class Payroll extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'employee_id',
-        'basic_salary',
-        'basic_period',
-        'start_date',
-        'end_date',
+        'total_earnings',
+        'total_deductions',
+        'net_salary',
+        'pay_date',
         'status'
     ];
 
     /**
-     * Define the relationship between Salary and Employee.
+     * Define relationship with Employee model.
+     * A payroll record belongs to an employee.
      */
     public function employee()
     {
