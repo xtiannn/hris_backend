@@ -6,17 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AttendanceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $attendances = Attendance::all();
+        try {
+            $validate = $request->validate([
+                'paginate' => ['numeric']
+            ]);
 
-        return response()->json($attendances, 200);
+            if ($request->has('paginate')) {
+                $attendances = Attendance::paginate($validate['paginate']);
+            } else {
+                $attendances = Attendance::get();
+            }
+
+            return response()->json($attendances, 200);
+        } catch (HttpException $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'details' => $e->getMessage()
+            ], $e->getStatusCode());
+        }
     }
 
     /**

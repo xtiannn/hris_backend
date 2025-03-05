@@ -6,19 +6,36 @@ use App\Http\Controllers\Controller;
 use App\Models\Salary;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SalaryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $salaries = Salary::with('employee')->get(); // Eager load employee details
-        return response()->json([
-            'message' => 'Salaries retrieved successfully',
-            'data' => $salaries
-        ], 200);
+
+        try {
+            $validate = $request->validate([
+                'paginate' => ['numeric']
+            ]);
+
+            if ($request->has('paginate')) {
+                $salaries = Salary::with('employee')->paginate($validate['paginate']);
+            } else {
+                $salaries = Salary::with('employee')->get();
+            }
+
+            return response()->json($salaries, 200);
+
+        } catch (HttpException $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'details' => $e->getMessage()
+            ], $e->getStatusCode());
+        }
+
     }
 
     /**

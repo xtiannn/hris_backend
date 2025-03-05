@@ -5,18 +5,35 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Designation;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class DesignationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Fetch all designations with their department
-        $designations = Designation::with('department')->get();
+        try {
 
-        return response()->json($designations, 200);
+            if ($request->has('paginate')) {
+
+                $validate = $request->validate([
+                    'paginate' => ['numeric']
+                ]);
+
+                $designations = Designation::paginate($validate['paginate']);
+            } else {
+                $designations = Designation::get();
+            }
+
+            return response()->json($designations, 200);
+        } catch (HttpException $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'details' => $e->getMessage()
+            ], $e->getStatusCode());
+        }
     }
 
     /**

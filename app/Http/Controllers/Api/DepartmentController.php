@@ -4,18 +4,41 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use Exception;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class DepartmentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Department::all();
+        try {
+            $validate = $request->validate([
+                'paginate' => ['numeric']
+            ]);
 
-        return response()->json($departments, 200);
+            // Query Key
+            if ($request->has('paginate')) {
+                $paginate = $validate;
+                $departments = Department::paginate($paginate);
+            } else {
+                $departments = Department::get();
+            }
+
+
+
+            return response()->json($departments, 200);
+
+        } catch (HttpException $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'details' => $e->getMessage()
+            ], $e->getStatusCode());
+        }
+
     }
 
     /**

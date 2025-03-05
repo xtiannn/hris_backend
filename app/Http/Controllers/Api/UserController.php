@@ -8,15 +8,38 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::isActive()->get();
+        try {
+            # paginate validation
+            $validate = $request->validate([
+                'paginate' => ['numeric']
+            ]);
+
+            if ($request->has('paginate')) {
+                $users = User::paginate($validate['paginate']);
+            } else {
+                $users = User::get();
+            }
+
+
+        } catch (HttpException $e) {
+            return response()->json(
+                [
+                    'error' => 'Somethin went wrong',
+                    'details' => $e->getMessage()
+                ],
+                $e->getStatusCode()
+            );
+        }
+
 
         return response()->json($users, 200);
     }

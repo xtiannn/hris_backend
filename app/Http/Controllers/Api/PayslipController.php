@@ -6,16 +6,36 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Payslip;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PayslipController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $result = Payslip::with(['employee', 'payroll'])->get(); // Eager loading
-        return response()->json($result, 200);
+        // $result = Payslip::with(['employee', 'payroll'])->get(); // Eager loading
+        // return response()->json($result, 200);
+
+        try {
+            $validate = $request->validate([
+                'paginate' => ['numeric']
+            ]);
+
+            if ($request->has('paginate')) {
+                $result = Payslip::with(['employee', 'payroll'])->paginate($validate['paginate']);
+            } else {
+                $result = Payslip::with(['employee', 'payroll'])->get();
+            }
+
+            return response()->json($result, 200);
+        } catch (HttpException $e) {
+            return response()->json([
+                'error' => 'Something went wrong!',
+                'details' => $e->getMessage()
+            ], $e->getStatusCode());
+        }
     }
 
     /**
